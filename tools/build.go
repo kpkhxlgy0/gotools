@@ -5,9 +5,15 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
+	"strings"
+
+	"uuzu.com/hanxl/pathext"
 )
 
 var (
@@ -25,28 +31,65 @@ var (
 )
 
 func main() {
+	var pathBinOrigin, pathBin string
+	gopath := os.Getenv("GOPATH")
+	iniPathOrigin := filepath.Join(gopath, "src", "uuzu.com", "hanxl", "tools", "config")
+	iniPath := filepath.Join(gopath, "bin")
+	if runtime.GOOS == "windows" {
+		pathBinOrigin = filepath.Join(gopath, "bin")
+		pathBin = filepath.Join(pathBinOrigin, "windows_arm64")
+		os.RemoveAll(pathBin)
+		os.MkdirAll(pathBin, os.ModePerm)
+	} else if runtime.GOOS == "linux" {
+		pathBinOrigin = filepath.Join(gopath, "bin")
+		pathBin = filepath.Join(gopath, "bin", "linux_arm64")
+		os.RemoveAll(pathBin)
+		os.MkdirAll(pathBin, os.ModePerm)
+	}
 	env := os.Environ()
 	for _, v := range packages {
-		fmt.Println("windows", v)
+		// fmt.Println("windows", v)
+		fmt.Println(v)
 		cmd := exec.Command("go", "install", v)
 		cmd.Env = env
-		cmd.Env = append(cmd.Env, "GOOS=windows")
+		// cmd.Env = append(cmd.Env, "GOOS=windows")
 		e := cmd.Run()
 		checkError(e)
 
-		fmt.Println("darwin", v)
-		cmd = exec.Command("go", "install", v)
-		cmd.Env = env
-		cmd.Env = append(cmd.Env, "GOOS=darwin")
-		e = cmd.Run()
-		checkError(e)
+		arr := strings.Split(v, "/")
+		binName := arr[len(arr)-1]
 
-		fmt.Println("linux", v)
-		cmd = exec.Command("go", "install", v)
-		cmd.Env = env
-		cmd.Env = append(cmd.Env, "GOOS=linux")
-		e = cmd.Run()
-		checkError(e)
+		iniName := binName + ".ini"
+		iniOrigin := filepath.Join(iniPathOrigin, iniName)
+		ini := filepath.Join(iniPath, iniName)
+		if pathext.Exists(iniOrigin) && !pathext.Exists(ini) {
+			r, _ := os.Open(iniOrigin)
+			w, _ := os.Create(ini)
+			defer r.Close()
+			defer w.Close()
+			io.Copy(w, r)
+		}
+
+		if runtime.GOOS == "windows" {
+			binName += ".exe"
+			os.Rename(filepath.Join(pathBinOrigin, binName), filepath.Join(pathBin, binName))
+		} else if runtime.GOOS == "linux" {
+			os.Rename(filepath.Join(pathBinOrigin, binName), filepath.Join(pathBin, binName))
+		}
+
+		// fmt.Println("darwin", v)
+		// cmd = exec.Command("go", "install", v)
+		// cmd.Env = env
+		// cmd.Env = append(cmd.Env, "GOOS=darwin")
+		// e = cmd.Run()
+		// checkError(e)
+
+		// fmt.Println("linux", v)
+		// cmd = exec.Command("go", "install", v)
+		// cmd.Env = env
+		// cmd.Env = append(cmd.Env, "GOOS=linux")
+		// e = cmd.Run()
+		// checkError(e)
 	}
 }
 

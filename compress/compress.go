@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/zip"
+	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -61,7 +63,7 @@ func main() {
 	for _, v := range outputs {
 		arr := pattern.FindStringSubmatch(v)
 		if len(arr) > 0 {
-			verLast, _ = strconv.Atoi(arr[1])
+			verLast, _ = strconv.Atoi(strings.Trim(arr[1], "\n\r"))
 		}
 	}
 	println(verLast)
@@ -169,4 +171,8 @@ func main() {
 
 	f.WriteString("return ")
 	utils.DumpLua(reflect.ValueOf(dict), f, 0)
+
+	if runtime.GOOS == "windows" {
+		bufio.NewReader(os.Stdin).ReadLine()
+	}
 }

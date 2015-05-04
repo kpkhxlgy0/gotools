@@ -22,26 +22,27 @@ var (
 func main() {
 	env := os.Environ()
 	for _, v := range packages {
-		fmt.Println("windows", v)
+		// fmt.Println("windows", v)
+		fmt.Println(v)
 		cmd := exec.Command("go", "get", "-u", v)
 		cmd.Env = env
-		cmd.Env = append(cmd.Env, "GOOS=windows")
+		// cmd.Env = append(cmd.Env, "GOOS=windows")
 		e := cmd.Run()
 		checkError(e)
 
-		fmt.Println("darwin", v)
-		cmd = exec.Command("go", "get", "-u", v)
-		cmd.Env = env
-		cmd.Env = append(cmd.Env, "GOOS=darwin")
-		e = cmd.Run()
-		checkError(e)
+		// fmt.Println("darwin", v)
+		// cmd = exec.Command("go", "get", "-u", v)
+		// cmd.Env = env
+		// cmd.Env = append(cmd.Env, "GOOS=darwin")
+		// e = cmd.Run()
+		// checkError(e)
 
-		fmt.Println("linux", v)
-		cmd = exec.Command("go", "get", "-u", v)
-		cmd.Env = env
-		cmd.Env = append(cmd.Env, "GOOS=linux")
-		e = cmd.Run()
-		checkError(e)
+		// fmt.Println("linux", v)
+		// cmd = exec.Command("go", "get", "-u", v)
+		// cmd.Env = env
+		// cmd.Env = append(cmd.Env, "GOOS=linux")
+		// e = cmd.Run()
+		// checkError(e)
 	}
 }
 

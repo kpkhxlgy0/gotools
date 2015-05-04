@@ -3,11 +3,16 @@ package pathext
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 func GetExecPath() string {
 	s := os.Args[0]
 	path, _ := filepath.Abs(s)
+	if runtime.GOOS == "windows" || runtime.GOOS == "linux" {
+		base := filepath.Base(path)
+		path = filepath.Join(path, "..", "..", base)
+	}
 	return path
 }
 
